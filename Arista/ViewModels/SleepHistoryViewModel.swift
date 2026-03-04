@@ -6,36 +6,68 @@
 //
 
 import Foundation
+import SwiftUI
 import CoreData
 
 class SleepHistoryViewModel: ObservableObject {
-    @Published var sleepSessions = [FakeSleepSession]()
     
-    private var viewContext: NSManagedObjectContext
+    // MARK: - Published
     
-    init(context: NSManagedObjectContext) {
+    @Published var sleepSessions: [Sleep] = []
+    @Published var errorMessage: String?
+    
+    // MARK: - Private
+    
+    private let viewContext: NSManagedObjectContext
+    
+    // MARK: - Init
+    
+    init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.viewContext = context
         fetchSleepSessions()
     }
     
-    private func fetchSleepSessions() {
-        
-        sleepSessions = [FakeSleepSession(), 
-                         FakeSleepSession(),
-                         FakeSleepSession(),
-                         FakeSleepSession(),
-                         FakeSleepSession(),
-                         FakeSleepSession(),
-                         FakeSleepSession(),
-                         FakeSleepSession(),
-                         FakeSleepSession(),
-                         FakeSleepSession()]
+    // MARK: - Fetch
+    func fetchSleepSessions() {
+        do {
+            sleepSessions = try SleepRepository(viewContext: viewContext).getSleepSessions()
+            
+        } catch {
+            errorMessage = "Erreur lors de la récupération des sessions de sommeil."
+            print("SleepHistoryViewModel - fetchSleepSessions \(error.localizedDescription)")
+        }
+    }
+    
+    // MARK: - Formatage
+    
+    /// Retourne la durée formatée en heure/minutes
+    static func formattedDuration(_ minutes: Int64) -> String {
+        let h = minutes / 60
+        let m = minutes % 60
+        return m > 0 ? "\(h)h\(String(format: "%02d", m))" : "\(h)h"
+    }
+    
+    /// Retourne le nom de l'icone Symbols correspondant à une qualité de sommeil
+    static func qualityIcon(for quality: String?) -> String {
+        switch quality {
+        case "mauvaise":   return "xmark.circle.fill"
+        case "moyenne":    return "minus.circle.fill"
+        case "bonne":      return "checkmark.circle.fill"
+        case "excellente": return "star.circle.fill"
+        default:           return "circle"
+        }
+    }
+    
+    /// Retourne la couleur associée à une qualité de sommeil
+    static func qualityColor(for quality: String?) -> Color {
+        switch quality {
+        case "mauvaise":   return .red
+        case "moyenne":    return .orange
+        case "bonne":      return .green
+        case "excellente": return .indigo
+        default:           return .secondary
+        }
     }
 }
 
-struct FakeSleepSession: Identifiable {
-    var id = UUID()
-    var startDate: Date = Date()
-    var duration: Int = 695
-    var quality: Int = (0...10).randomElement()!
-}
+

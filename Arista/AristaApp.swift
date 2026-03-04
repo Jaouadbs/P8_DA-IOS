@@ -33,6 +33,7 @@ struct AristaApp: App {
                     }
                 
             }
+            .tint(.indigo)
         }
     }
 }
