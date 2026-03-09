@@ -12,7 +12,7 @@ import CoreData
 struct ExerciseListView: View {
     @ObservedObject var viewModel : ExerciseListViewModel
     @State private var showAddExercise = false
-    
+
     var body: some View {
         NavigationStack {
             Group {
@@ -67,7 +67,7 @@ struct ExerciseListView: View {
 
 private struct ExerciseRow: View {
     let exercise: Exercise
-    
+
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: ExerciseListViewModel.icon(for: exercise.category))
@@ -93,7 +93,7 @@ private struct ExerciseRow: View {
                 .foregroundStyle(.secondary)
             }
             Spacer()
-            
+
             if let date = exercise.startDate{
                 Text(date, style: .date)
                     .font(.caption2)
@@ -117,24 +117,24 @@ private struct ExerciseRow: View {
 private func makeExercisePreview(withData: Bool) -> some View {
     let persistence = PersistenceController.preview
     let context = persistence.container.viewContext
-    
+
     let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Exercise.fetchRequest()
     let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-    
+
     do {
         try context.execute(deleteRequest)
         try context.save()
     } catch {
         print("Erreur lors de la suppression des exercices : \(error)")
     }
-    
+
     if withData {
         let user = User(context: context)
         user.id = UUID()
         user.firstName = "Charlotte"
         user.lastName = "Razoul"
         try? context.save()
-        
+
         let exercicesData: [(String, Int64, String, TimeInterval)] = [
             ("cardio",      30, "elevee",      0),
             ("musculation", 60, "tres_elevee", -(60 * 60 * 24)),

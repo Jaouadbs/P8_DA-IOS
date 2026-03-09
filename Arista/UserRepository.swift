@@ -8,19 +8,19 @@
 import Foundation
 import CoreData
 
-    struct UserRepository {
+struct UserRepository {
 
-        let viewContext: NSManagedObjectContext
-        
-        // Initialisation avec le contexte de persistance partagé
-        init(viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
-            self.viewContext = viewContext
-        }
+    let viewContext: NSManagedObjectContext
 
-        // Récupère l'utilisateur unique de la base de données
-        func getUser() throws -> User? {
-            let request = User.fetchRequest()
-            request.fetchLimit = 1
-            return try viewContext.fetch(request).first
+    // Initialisation avec le contexte de persistance partagé
+    init(viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
+        self.viewContext = viewContext
+    }
+
+    // Récupère l'utilisateur unique de la base de données
+    func getUser() throws -> User? {
+        let request = User.fetchRequest()
+        request.fetchLimit = 1
+        return try viewContext.fetch(request).first
     }
 }

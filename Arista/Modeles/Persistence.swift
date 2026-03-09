@@ -8,12 +8,12 @@
 import CoreData
 
 struct PersistenceController {
-    
+
     // MARK: - Singleton
-    
+
     /// Singleton partagé pour accèder au contrôleur de persistance
     static let shared = PersistenceController()
-    
+
     // MARK: - Preview
     static var preview : PersistenceController = {
         let result = PersistenceController(inMemory: true)
@@ -27,24 +27,24 @@ struct PersistenceController {
         }
         return result
     } ()
-    
+
     // MARK: - Container
-    
+
     // Conteneur Core Data principal
     let container: NSPersistentContainer
-    
+
     // MARK: - Initialisation
     // Initialise le contrôleur de persistance
     // Si true, les données sont stockées en mémoire, pour les tests et la visualisation
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "Arista")
-        
+
         // En mode mémoire, on redirige le store vers /dev/null pour éviter
         // toute écriture sur le disque. Utilisé par les tests et les previews.
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
-        
+
         /// Chargement du magasin persistant(base de données)
         container.loadPersistentStores { (storeDescription,error) in
             if let error = error  {
@@ -54,12 +54,12 @@ struct PersistenceController {
                 print("PersistenceController - Echec du chargement du store : \(persistenceError.errorDescription ?? "")")
             }
         }
-        
+
         // Activation de la fusion automatique des chargements
         // Permet de synchroniser les modifications entres les contextes Core Data
         container.viewContext.automaticallyMergesChangesFromParent = true
-        
-        
+
+
         // Insertion des données par défaut (utilisateur + sessions de sommeil).
         // Ignorée en mode inMemory pour garantir un environnement vierge
         // lors de l'exécution des tests unitaires.
@@ -74,7 +74,7 @@ struct PersistenceController {
 enum PersistenceError: LocalizedError {
     case storeLoadFailed(underlying: Error)
     case previewSaveFailed(underlying: Error)
-    
+
     var errorDescription: String? {
         switch self {
         case .storeLoadFailed(let error):

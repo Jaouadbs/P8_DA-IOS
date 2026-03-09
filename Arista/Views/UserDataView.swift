@@ -10,7 +10,7 @@ import CoreData
 
 struct UserDataView: View {
     @ObservedObject var viewModel : UserDataViewModel
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -42,7 +42,7 @@ private struct LabeledRow: View {
     let icon: String
     let label: String
     let value: String
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
@@ -66,23 +66,23 @@ private struct LabeledRow: View {
 
 #Preview("Sans utilisateur - état d'erreur") {
     makeUserDataPreview(withUser: false)
-    
+
 }
 
 private func makeUserDataPreview(withUser : Bool) -> some View {
     let persistence = PersistenceController(inMemory: true)
     let context = persistence.container.viewContext
-    
+
     let fetchRequest: NSFetchRequest<NSFetchRequestResult> = User.fetchRequest()
     let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-    
+
     do {
         try context.execute(deleteRequest)
         try context.save()
     } catch {
         print("Erreur lors de la suppression des données : \(error)")
     }
-    
+
     if withUser {
         let user                = User(context:context)
         user.id                 = UUID()
@@ -95,14 +95,14 @@ private func makeUserDataPreview(withUser : Bool) -> some View {
         user.caloriesBurnedGoal = 500
         user.createdAt          = Date()
         user.updatedAt          = Date()
-        
-        
+
+
         try? context.save()
     }
-    
+
     return UserDataView(viewModel: UserDataViewModel(context: context))
         .environment(\.managedObjectContext,context)
-    
+
 }
 
 

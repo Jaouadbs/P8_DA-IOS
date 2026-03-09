@@ -10,41 +10,41 @@ import SwiftUI
 import CoreData
 
 class ExerciseListViewModel: ObservableObject {
-    
+
     // MARK: - Published
-    
+
     @Published var exercises: [Exercise] = []
     @Published var errorMessage: String?
-    
+
     // MARK: - Private
-    
+
     private let viewContext: NSManagedObjectContext
-    
+
     // MARK: - Init
-    
+
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.viewContext = context
         fetchExercises()
     }
-    
+
     // MARK: - fetch
-    
+
     private func fetchExercises() {
         // TODO: fetch data in CoreData and replace dumb value below with appropriate information
         do {
             exercises = try ExerciseRepository(viewContext: viewContext).getExercises()
-            
+
         } catch {
             errorMessage = "Erreur lors la récupération des exercices."
             print("ExerciseListViewModel - fetchExercises : \(error.localizedDescription)")
         }
     }
-    
+
     // Relance la requête-  appelé via onAppear et onDismiss de la vue liste
     func reload() {
         fetchExercises()
     }
-    
+
     // Supprime un ou plusieurs exercices
     func deleteExercise(at offsets: IndexSet) {
         offsets.forEach { index in
@@ -59,14 +59,14 @@ class ExerciseListViewModel: ObservableObject {
         // Maj locale dans relancer la requête complete
         exercises.remove(atOffsets: offsets)
     }
-    
+
     // MARK: - Formatage
-    
+
     /// Convertit une durée en minutes (Int64) en chaîne lisible (ex: 45 → "45 min")
     static func formattedDuration(_ minutes: Int64) -> String {
         return"\(minutes) min"
     }
-    
+
     /// Retourne le nom de l'icône SF Symbols correspondant à une catégorie d'exercice
     static func icon(for category: String?) -> String {
         switch category {
@@ -78,7 +78,7 @@ class ExerciseListViewModel: ObservableObject {
         default:            return "figure.mixed.cardio"
         }
     }
-    
+
     /// Retourne la couleur associée à une catégorie d'exercice
     static func color(for category: String?) -> Color {
         switch category {
