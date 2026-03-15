@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct UserDataView: View {
     @ObservedObject var viewModel : UserDataViewModel
@@ -37,7 +36,7 @@ struct UserDataView: View {
 }
 
 // MARK: Sous-vue LabeledRow
-/// Composant d'afficae réutilisable pour une ligne icône / mabel / valeur
+/// Composant d'affichage réutilisable pour une ligne icône / libellé / valeur
 private struct LabeledRow: View {
     let icon: String
     let label: String
@@ -58,51 +57,35 @@ private struct LabeledRow: View {
 }
 
 
-// MARK : Preiew
+// MARK: - PREVIEWS
 
-#Preview("Avec données") {
-    makeUserDataPreview(withUser: true)
+#Preview {
+    // 1. Création d'un Repository de test (Mock)
+    let mockRepo = MockUserRepository()
+
+    // 2. Injection du Repo dans le ViewModel
+    let viewModel = UserDataViewModel(repository: mockRepo)
+
+    // 3. Retour de la vue avec le ViewModel prêt
+    UserDataView(viewModel: viewModel)
 }
 
-#Preview("Sans utilisateur - état d'erreur") {
-    makeUserDataPreview(withUser: false)
+// MARK: - Mock pour la Preview
 
-}
-
-private func makeUserDataPreview(withUser : Bool) -> some View {
-    let persistence = PersistenceController(inMemory: true)
-    let context = persistence.container.viewContext
-
-    let fetchRequest: NSFetchRequest<NSFetchRequestResult> = User.fetchRequest()
-    let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-    do {
-        try context.execute(deleteRequest)
-        try context.save()
-    } catch {
-        print("Erreur lors de la suppression des données : \(error)")
+/// Une version simplifiée du repository qui n'utilise pas Core Data,
+/// juste pour l'affichage dans Xcode.
+private struct MockUserRepository: UserRepositoryProtocol {
+    func getUser() throws -> UserModel? {
+        return UserModel(
+            firstName: "Charlotte",
+            lastName: "Razoul",
+            email: "charlotte@arista.com",
+            dailyStepGoal: 10000,
+            sleepHoursGoal: 480, // 8 heures
+            hydrationMlGoal: 2000,
+            caloriesBurnedGoal: 500
+        )
     }
-
-    if withUser {
-        let user                = User(context:context)
-        user.id                 = UUID()
-        user.firstName          = "Charlotte"
-        user.lastName           = "Razoul"
-        user.email              = "charlotte.razoul@example.com"
-        user.dailyStepGoal      = 10_000
-        user.sleepHoursGoal     = 480
-        user.hydrationMlGoal    = 2000
-        user.caloriesBurnedGoal = 500
-        user.createdAt          = Date()
-        user.updatedAt          = Date()
-
-
-        try? context.save()
-    }
-
-    return UserDataView(viewModel: UserDataViewModel(context: context))
-        .environment(\.managedObjectContext,context)
-
 }
 
 

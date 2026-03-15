@@ -3,35 +3,37 @@
 //  Arista
 //
 //  Created by Vincent Saluzzo on 08/12/2023.
-//
+//  Dépend uniquement de SleepRepositoryProtocol
 
 import Foundation
 import SwiftUI
-import CoreData
 
 class SleepHistoryViewModel: ObservableObject {
     
     // MARK: - Published
     
-    @Published var sleepSessions: [Sleep] = []
+    @Published var sleepSessions: [SleepModel] = []
     @Published var errorMessage: String?
     
     // MARK: - Private
-    
-    private let viewContext: NSManagedObjectContext
-    
+    ///Le protocole qui permet d'accéder aux données sans savoir comment elles sont stockées.
+    private let repository : SleepRepositoryProtocol
+
     // MARK: - Init
-    
-    init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
-        self.viewContext = context
+
+    /// Initialisation avec injection du repository de sommeil
+    init(repository: SleepRepositoryProtocol) {
+        self.repository = repository
         fetchSleepSessions()
     }
-    
+
     // MARK: - Fetch
-    func fetchSleepSessions() {
+
+    /// le ViewModel décide quand charger les données des sessions depuis le repository
+    private func fetchSleepSessions() {
         do {
-            sleepSessions = try SleepRepository(viewContext: viewContext).getSleepSessions()
-            
+            sleepSessions = try repository.getSleepSessions()
+
         } catch {
             errorMessage = "Erreur lors de la récupération des sessions de sommeil."
             print("SleepHistoryViewModel - fetchSleepSessions \(error.localizedDescription)")
@@ -44,7 +46,12 @@ class SleepHistoryViewModel: ObservableObject {
     static func formattedDuration(_ minutes: Int64) -> String {
         let h = minutes / 60
         let m = minutes % 60
-        return m > 0 ? "\(h)h\(String(format: "%02d", m))" : "\(h)h"
+
+        // Cas de moins d'une heure
+        if h == 0 {return"\(m) min"}
+        // Cas d'une heure pile
+        if m == 0 {return"\(h) h"}
+        return "\(h)h\(String(format: "%02d", m))"
     }
     
     /// Retourne le nom de l'icone Symbols correspondant à une qualité de sommeil
@@ -64,7 +71,7 @@ class SleepHistoryViewModel: ObservableObject {
         case "mauvaise":   return .red
         case "moyenne":    return .orange
         case "bonne":      return .green
-        case "excellente": return .indigo
+        case "excellente": return .yellow
         default:           return .secondary
         }
     }

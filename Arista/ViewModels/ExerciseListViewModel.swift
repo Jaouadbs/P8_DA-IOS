@@ -3,40 +3,54 @@
 //  Arista
 //
 //  Created by Vincent Saluzzo on 08/12/2023.
-//
+//  Dépend uniquement de ExerciseRepositoryProtocol.
+//  Gère la logique de la liste des exercices et la suppression
 
 import Foundation
 import SwiftUI
-import CoreData
+
 
 class ExerciseListViewModel: ObservableObject {
 
     // MARK: - Published
 
-    @Published var exercises: [Exercise] = []
+    @Published var exercises: [ExerciseModel] = []
     @Published var errorMessage: String?
 
-    // MARK: - Private
+    // MARK: - Child ViewModel
+    /// On crée le ViewModel d'ajout.
+    /// Cela permet de partager les meme repo
+    let addExerciseViewModel: AddExerciseViewModel
 
-    private let viewContext: NSManagedObjectContext
+    // MARK: - Private
+    private let repository : ExerciseRepositoryProtocol
 
     // MARK: - Init
+    /// L'initialiseur reçoit les deux repositories nécessaires.
+        init(exerciseRepository: ExerciseRepositoryProtocol,
+             userRepository:     UserRepositoryProtocol) {
+            self.repository = exerciseRepository
 
-    init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
-        self.viewContext = context
-        fetchExercises()
-    }
+            // On initialise le sous-ViewModel pour l'ajout d'exercice.
+            self.addExerciseViewModel = AddExerciseViewModel (
+                exerciseRepository: exerciseRepository,
+                userRepository:     userRepository
+            )
 
-    // MARK: - fetch
+            // Premier chargement des données.
+            fetchExercises()
+        }
 
-    private func fetchExercises() {
-        // TODO: fetch data in CoreData and replace dumb value below with appropriate information
+    // MARK: - Actions
+
+    // Recharge la liste des exercices depuis le Repository
+    func fetchExercises() {
         do {
-            exercises = try ExerciseRepository(viewContext: viewContext).getExercises()
-
+            //On recupère les DTO
+            exercises = try repository.getExercises()
         } catch {
-            errorMessage = "Erreur lors la récupération des exercices."
-            print("ExerciseListViewModel - fetchExercises : \(error.localizedDescription)")
+            errorMessage = "Erreur lors de chargement des exercices."
+            print("ExerciseListViewModel - reload : \(error.localizedDescription)")
         }
     }
 
@@ -45,12 +59,12 @@ class ExerciseListViewModel: ObservableObject {
         fetchExercises()
     }
 
-    // Supprime un ou plusieurs exercices
+    // Supprime un exercice suite à un balayage (swipe-to-delete) dans la List.
     func deleteExercise(at offsets: IndexSet) {
         offsets.forEach { index in
             let exercise = exercises[index]
             do {
-                try ExerciseRepository(viewContext: viewContext).deleteExercise(exercise)
+                try repository.deleteExercise(withId: exercise.id)
             } catch {
                 errorMessage = "Erreur lors de la suppression de l'exercice."
                 print("ExerciseListViewModel - deleteExercise : \(error.localizedDescription)")
@@ -72,7 +86,7 @@ class ExerciseListViewModel: ObservableObject {
         switch category {
         case "cardio":      return "heart.fill"
         case "musculation": return "dumbbell.fill"
-        case "yoga":        return "figure.mind.add.body"
+        case "yoga":        return "figure.mind.and.body"
         case "marche":      return "figure.walk"
         case "sport":       return "sportscourt.fill"
         default:            return "figure.mixed.cardio"

@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import CoreData
-
 
 struct ExerciseListView: View {
     @ObservedObject var viewModel : ExerciseListViewModel
@@ -23,10 +21,10 @@ struct ExerciseListView: View {
                     )
                 } else {
                     List {
-                        ForEach(viewModel.exercises) { exercise in ExerciseRow(exercise: exercise)
+                        ForEach(viewModel.exercises) { exercise in
+                            ExerciseRow(exercise: exercise)
                         }
-                        .onDelete { offsets in
-                            viewModel.deleteExercise(at: offsets)
+                        .onDelete { offsets in viewModel.deleteExercise(at: offsets)
                         }
                     }
                     .listStyle(.insetGrouped)
@@ -43,7 +41,7 @@ struct ExerciseListView: View {
                             .foregroundStyle(.indigo)
                     }
                 }
-                // Bouton supprimer natif
+                // Permet d'activer le mode édition pour supprimer plusieurs éléments
                 ToolbarItem(placement: .topBarLeading) {
                     if !viewModel.exercises.isEmpty {
                         EditButton()
@@ -51,8 +49,9 @@ struct ExerciseListView: View {
                 }
             }
             .onAppear{ viewModel.reload()}
-            .sheet(isPresented: $showAddExercise, onDismiss: { viewModel.reload()}) {
-                AddExerciseView()
+            .sheet(isPresented: $showAddExercise,
+                   onDismiss: { viewModel.reload()}) {
+                AddExerciseView(viewModel: viewModel.addExerciseViewModel)
             }
             .alert("Erreur", isPresented: .constant(viewModel.errorMessage != nil)){
                 Button("OK") {}
@@ -66,95 +65,99 @@ struct ExerciseListView: View {
 // MARK: - Sous-vue ExerciseRow
 
 private struct ExerciseRow: View {
-    let exercise: Exercise
+    let exercise: ExerciseModel
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(alignment: .top, spacing: 14) {
             Image(systemName: ExerciseListViewModel.icon(for: exercise.category))
                 .font(.title2)
                 .foregroundStyle(.white)
                 .frame(width: 44,height: 44)
                 .background(ExerciseListViewModel.color(for: exercise.category).gradient)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
-            VStack(alignment: .leading, spacing: 4) {
-                Text(exercise.category?.capitalized ?? "_")
-                    .fontWeight(.semibold)
-                HStack(spacing: 8) {
+
+            VStack (alignment: .leading, spacing: 6) {
+
+                HStack {
+                    Text(exercise.category.capitalized )
+                        .fontWeight(.semibold)
+                        .font(.headline)
+                    Spacer()
+                    Text(exercise.startDate, style: .date)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+
+                HStack(spacing: 16){
                     Label(
                         ExerciseListViewModel.formattedDuration(exercise.duration),
                         systemImage: "clock"
                     )
                     Label(
-                        exercise.intensity?.capitalized ?? "_",
+                        exercise.intensity.capitalized ,
                         systemImage: "bolt.fill"
                     )
+
                 }
-                .font(.caption)
+
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
             }
-            Spacer()
-
-            if let date = exercise.startDate{
-                Text(date, style: .date)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
 }
 
-// MARK: Perviews
+
+// MARK: - Previews
 
 #Preview("Liste vide") {
-    makeExercisePreview(withData: false)
+    // On utilise un repository de simulation (Mock) qui ne nécessite pas Core Data
+    let mockRepo = PreviewExerciseRepository(withData: false)
+    let mockUserRepo = PreviewUserRepository()
+    let viewModel = ExerciseListViewModel(exerciseRepository: mockRepo, userRepository: mockUserRepo)
+
+    return ExerciseListView(viewModel: viewModel)
 }
 
 #Preview("Avec exercices") {
-    makeExercisePreview(withData: true)
+    let mockRepo = PreviewExerciseRepository(withData: true)
+    let mockUserRepo = PreviewUserRepository()
+    let viewModel = ExerciseListViewModel(exerciseRepository: mockRepo, userRepository: mockUserRepo)
+
+    return ExerciseListView(viewModel: viewModel)
 }
 
-private func makeExercisePreview(withData: Bool) -> some View {
-    let persistence = PersistenceController.preview
-    let context = persistence.container.viewContext
+// MARK: - Classes de simulation pour la Preview
+// Ces classes respectent les protocoles mais n'importent pas CoreData.
 
-    let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Exercise.fetchRequest()
-    let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+private struct PreviewExerciseRepository: ExerciseRepositoryProtocol {
+    let withData: Bool
 
-    do {
-        try context.execute(deleteRequest)
-        try context.save()
-    } catch {
-        print("Erreur lors de la suppression des exercices : \(error)")
-    }
+    func getExercises() throws -> [ExerciseModel] {
+        guard withData else { return [] }
+        return [
+            ExerciseModel(id: UUID(), category: "musculation", duration: 30, intensity: "elevee", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "cardio", duration: 30, intensity: "elevee", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "yoga", duration: 60, intensity: "faible", startDate: Date().addingTimeInterval(-86400)),
+            ExerciseModel(id: UUID(), category: "marche", duration: 30, intensity: "elevee", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "sport", duration: 30, intensity: "moyen", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "autres", duration: 30, intensity: "elevee", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "musculation", duration: 30, intensity: "elevee", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "cardio", duration: 30, intensity: "elevee", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "yoga", duration: 60, intensity: "faible", startDate: Date().addingTimeInterval(-86400)),
+            ExerciseModel(id: UUID(), category: "marche", duration: 30, intensity: "elevee", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "sport", duration: 30, intensity: "moyen", startDate: Date()),
+            ExerciseModel(id: UUID(), category: "autres", duration: 30, intensity: "elevee", startDate: Date()),
 
-    if withData {
-        let user = User(context: context)
-        user.id = UUID()
-        user.firstName = "Charlotte"
-        user.lastName = "Razoul"
-        try? context.save()
-
-        let exercicesData: [(String, Int64, String, TimeInterval)] = [
-            ("cardio",      30, "elevee",      0),
-            ("musculation", 60, "tres_elevee", -(60 * 60 * 24)),
-            ("yoga",        45, "faible",      -(60 * 60 * 24 * 2)),
-            ("marche",      90, "moderee",     -(60 * 60 * 24 * 3)),
-            ("sport",       20, "elevee",      -(60 * 60 * 24 * 4))
         ]
-        for data in exercicesData {
-            let exercise = Exercise(context: context)
-            exercise.id = UUID()
-            exercise.category = data.0
-            exercise.duration = data.1
-            exercise.intensity = data.2
-            exercise.startDate = Date(timeIntervalSinceNow: data.3)
-            exercise.user = user
-        }
-        try? context.save()
     }
-    return ExerciseListView(viewModel: ExerciseListViewModel(context: context))
-        .environment(\.managedObjectContext, context)
+
+    func addExercise(category: String, duration: Int64, intensity: String, startDate: Date) throws {}
+    func deleteExercise(withId id: UUID) throws {}
 }
 
+private struct PreviewUserRepository: UserRepositoryProtocol {
+    func getUser() throws -> UserModel? { return nil }
+}
 

@@ -3,12 +3,13 @@
 //  Arista
 //
 //  Created by Jaouad on 23/02/2026.
-//
+//  Seul fichier autorisé à accèder à CoreData pour l'entité User.
+//  Retourne des UserModel
 
 import Foundation
 import CoreData
 
-struct UserRepository {
+struct UserRepository : UserRepositoryProtocol {
 
     let viewContext: NSManagedObjectContext
 
@@ -17,10 +18,24 @@ struct UserRepository {
         self.viewContext = viewContext
     }
 
-    // Récupère l'utilisateur unique de la base de données
-    func getUser() throws -> User? {
+    // Récupère l'utilisateur et le convertit en UserModel
+    func getUser() throws -> UserModel? {
         let request = User.fetchRequest()
         request.fetchLimit = 1
-        return try viewContext.fetch(request).first
+        guard let user =  try viewContext.fetch(request).first else { return nil}
+
+        return UserModel(
+            firstName :             user.firstName      ?? "",
+            lastName:               user.lastName       ?? "",
+            email:                  user.email          ?? "",
+            dailyStepGoal:          user.dailyStepGoal,
+            sleepHoursGoal:         user.sleepHoursGoal,
+            hydrationMlGoal:        user.dailyStepGoal,
+            caloriesBurnedGoal:     user.caloriesBurnedGoal
+        )
     }
 }
+
+
+
+

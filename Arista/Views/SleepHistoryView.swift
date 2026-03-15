@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
-import CoreData
+
 
 struct SleepHistoryView: View {
+
     @ObservedObject  var viewModel : SleepHistoryViewModel
-    
+
     var body: some View {
         NavigationStack {
             Group {
@@ -18,10 +19,11 @@ struct SleepHistoryView: View {
                     ContentUnavailableView(
                         "Aucun session",
                         systemImage: "moon.zzz.fill",
-                        description: Text("vos données de sommeil apparaîtront ici")
+                        description: Text("Vos données de sommeil apparaîtront ici")
                     )
                 } else {
-                    List(viewModel.sleepSessions) { session in SleepRow(session: session)
+                    List(viewModel.sleepSessions) { session in
+                        SleepRow(session: session)
                     }
                     .listStyle(.insetGrouped)
                 }
@@ -38,10 +40,11 @@ struct SleepHistoryView: View {
 
 // MARK: - Sous-vue SleepRow
 private struct SleepRow: View {
-    let session: Sleep
-    
+    let session: SleepModel
+
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(alignment: .top, spacing: 14) {
+            // l'icone fixe à gauche
             Image(systemName: session.category == "sieste" ? "sun.haze.fill" : "moon.stars.fill")
                 .font(.title2)
                 .foregroundStyle(.white)
@@ -50,81 +53,75 @@ private struct SleepRow: View {
                     (session.category == "sieste" ? Color.orange : Color.indigo).gradient
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10))
-            VStack(alignment: .leading,spacing: 4) {
-                Text(session.category?.capitalized ?? "_")
-                    .fontWeight(.semibold)
-                HStack(spacing: 8) {
+
+            // bloc de données
+            VStack(alignment: .leading,spacing: 6) {
+                // Ligne du titre + Date
+                HStack {
+                    Text(session.category.capitalized)
+                        .fontWeight(.semibold)
+                    Spacer()
+
+                    // La Date  poussée à droite
+                    Text(session.startDate, style: .date)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                // Ligne du bas / Durée et intensité
+                HStack(spacing: 16) {
+                    // La durée
                     Label(
                         SleepHistoryViewModel.formattedDuration(session.duration),
                         systemImage: "clock"
                     )
                     Label(
-                        session.quality?.capitalized ?? "_",
+                        //Qualité de sommeil
+                        session.quality.capitalized,
                         systemImage: SleepHistoryViewModel.qualityIcon(for: session.quality)
                     )
                     .foregroundStyle(SleepHistoryViewModel.qualityColor(for: session.quality))
                 }
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
-                
-                if let start = session.startDate {
-                    Text(start, style: .date)
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
             }
         }
-        .padding(.vertical, 4)
+
+        .padding(.vertical, 8)
     }
 }
 
-// MARK: Preview
+// MARK: - Previews
 
-
-#Preview("Liste vide") {
-    let persistence = PersistenceController(inMemory: true)
-    let context = persistence.container.viewContext
-    return SleepHistoryView(viewModel: SleepHistoryViewModel(context: context))
-        .environment(\.managedObjectContext, context)
+#Preview("Historique Vide") {
+    let mockRepo = PreviewSleepRepository(withData: false)
+    let viewModel = SleepHistoryViewModel(repository: mockRepo)
+    return SleepHistoryView(viewModel: viewModel)
 }
 
-#Preview("Avec sessions") {
-    makeSleepHistoryPreview(withData: true)
+#Preview("Avec Sessions") {
+    let mockRepo = PreviewSleepRepository(withData: true)
+    let viewModel = SleepHistoryViewModel(repository: mockRepo)
+    return SleepHistoryView(viewModel: viewModel)
 }
 
-private func makeSleepHistoryPreview(withData: Bool) -> some View {
-    let persistence = PersistenceController.preview
-    let context = persistence.container.viewContext
-    
-    if withData {
-        let user = User(context: context)
-        user.id = UUID()
-        user.firstName = "Charlotte"
-        user.lastName = "Razoul"
-        try? context.save()
-        
-        let sessionsData: [(Int64, String, String, TimeInterval)] = [
-            (90,  "bonne",      "sieste", -(60 * 60 * 2)),
-            (480, "excellente", "nuit",   -(60 * 60 * 24)),
-            (330, "mauvaise",   "nuit",   -(60 * 60 * 24 * 2)),
-            (360, "moyenne",    "nuit",   -(60 * 60 * 24 * 3)),
-            (420, "bonne",      "nuit",   -(60 * 60 * 24 * 4)),
+// MARK: - Mocks pour la Preview
+
+private struct PreviewSleepRepository: SleepRepositoryProtocol {
+    let withData: Bool
+
+    func getSleepSessions() throws -> [SleepModel] {
+        guard withData else { return [] }
+        let now = Date()
+        let night1Start = now
+        let night1End = night1Start.addingTimeInterval(480 * 60)
+        let napStart = now.addingTimeInterval(-43200)
+        let napEnd = napStart.addingTimeInterval(45 * 60)
+        let night2Start = now.addingTimeInterval(-86400)
+        let night2End = night2Start.addingTimeInterval(360 * 60)
+        return [
+            SleepModel(id: UUID(), category: "Nuit", duration: 480, quality: "excellente", startDate: night1Start, endDate: night1End),
+            SleepModel(id: UUID(), category: "Sieste", duration: 45, quality: "bonne", startDate: napStart, endDate: napEnd),
+            SleepModel(id: UUID(), category: "Nuit", duration: 360, quality: "mauvaise", startDate: night2Start, endDate: night2End)
         ]
-        for data in sessionsData {
-            let session        = Sleep(context: context)
-            session.id        = UUID()
-            session.duration  = data.0
-            session.quality   = data.1
-            session.category  = data.2
-            session.startDate  = Date(timeIntervalSinceNow: data.3)
-            session.endDate    = Date(timeIntervalSinceNow: data.3 + Double(data.0 * 60))
-            session.user       = user
-        }
-        try? context.save()
     }
-    return SleepHistoryView(viewModel: SleepHistoryViewModel(context: context))
-        .environment(\.managedObjectContext, context)
 }
-
-
-
