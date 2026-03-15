@@ -64,7 +64,12 @@ struct PersistenceController {
         // Ignorée en mode inMemory pour garantir un environnement vierge
         // lors de l'exécution des tests unitaires.
         if inMemory == false {
-            try! DefaultData(viewContext: container.viewContext).apply()
+            do {
+                try DefaultData(viewContext: container.viewContext).apply()
+            } catch {
+
+                print("PersistenceController - Echec des données par défaut ")
+            }
         }
     }
 }
