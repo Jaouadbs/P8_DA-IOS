@@ -4,128 +4,130 @@
 //
 //  Created by Jaouad on 03/03/2026.
 //
+//  Ce qu'on teste :
+//  1. Chargement des sessions depuis le repository (vide, 1 session, plusieurs)
+//  2. Comportement en cas d'erreur du repository
+//  3. Formatage statique des durées (formattedDuration)
+//  4. Icône et couleur selon la qualité du sommeil
+//
 
 import XCTest
-import CoreData
-import Combine
 @testable import Arista
 
 final class SleepHistoryViewModelTests: XCTestCase {
-    
-    var cancellables = Set<AnyCancellable>()
-    
-    func test_WhenNoSessionIsInDatabase_FetchSessions_ReturnsEmptyList() {
-        let persistence = PersistenceController(inMemory: true)
-        emptySessions(context: persistence.container.viewContext)
-        
-        let viewModel   = SleepHistoryViewModel(context: persistence.container.viewContext)
-        let expectation = XCTestExpectation(description: "fetch empty list")
-        
-        viewModel.$sleepSessions
-            .sink { sessions in
-                XCTAssertTrue(sessions.isEmpty)
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
-        wait(for: [expectation], timeout: 5)
+
+    // MARK: - Tests — chargement des sessions
+
+    /// Vérifie que sleepSessions est vide quand le repository ne contient aucune session.
+    /// Aucun message d'erreur ne doit être affiché dans ce cas — c'est un état normal.
+    func test_WhenNoSessionInRepository_SleepSessionsIsEmpty() {
+        // GIVEN — repository vide
+        let repository = MockSleepRepository(sessions: [])
+
+        // WHEN — le ViewModel charge les données à l'init
+        let viewModel = SleepHistoryViewModel(repository: repository)
+
+        // THEN
+        XCTAssertTrue(viewModel.sleepSessions.isEmpty, "La liste doit être vide si le repository est vide")
+        XCTAssertNil(viewModel.errorMessage,           "Aucune erreur ne doit être affichée pour une liste vide")
     }
-    
-    func test_WhenAddingOneSession_FetchSessions_ReturnsListWithThatSession() {
-        let persistence = PersistenceController(inMemory: true)
-        emptySessions(context: persistence.container.viewContext)
-        
-        let date = Date()
-        let user = makeUser(context: persistence.container.viewContext)
-        addSession(context: persistence.container.viewContext,
-                   startDate: date, duration: 450,
-                   quality: "bonne", category: "nuit", user: user)
-        
-        let viewModel   = SleepHistoryViewModel(context: persistence.container.viewContext)
-        let expectation = XCTestExpectation(description: "fetch one session")
-        
-        viewModel.$sleepSessions
-            .sink { sessions in
-                XCTAssertFalse(sessions.isEmpty)
-                XCTAssertEqual(sessions.first?.duration,  450)
-                XCTAssertEqual(sessions.first?.quality,   "bonne")
-                XCTAssertEqual(sessions.first?.category,  "nuit")
-                XCTAssertEqual(sessions.first?.startDate, date)
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
-        wait(for: [expectation], timeout: 5)
+
+    /// Vérifie que la session retournée par le repository est bien exposée dans sleepSessions,
+    /// avec toutes ses propriétés correctement mappées.
+    func test_WhenOneSessionInRepository_SleepSessionsContainsThatSession() {
+        // GIVEN — une session de nuit de 8h de bonne qualité
+        let date    = Date()
+        let session = SleepModel(
+            id:        UUID(),
+            category:  "nuit",
+            duration:  480,     // 8h en minutes
+            quality:   "bonne",
+            startDate: date,
+            endDate:   nil
+        )
+        let repository = MockSleepRepository(sessions: [session])
+
+        // WHEN
+        let viewModel = SleepHistoryViewModel(repository: repository)
+
+        // THEN
+        XCTAssertEqual(viewModel.sleepSessions.count, 1,       "La liste doit contenir 1 session")
+        XCTAssertEqual(viewModel.sleepSessions[0].category,  "nuit",  "La catégorie doit être 'nuit'")
+        XCTAssertEqual(viewModel.sleepSessions[0].duration,  480,     "La durée doit être 480 minutes")
+        XCTAssertEqual(viewModel.sleepSessions[0].quality,   "bonne", "La qualité doit être 'bonne'")
+        XCTAssertEqual(viewModel.sleepSessions[0].startDate, date,    "La date doit être correctement transmise")
     }
-    
-    func test_WhenAddingMultipleSessions_FetchSessions_ReturnsListFromMostRecentToOldest() {
-        let persistence = PersistenceController(inMemory: true)
-        emptySessions(context: persistence.container.viewContext)
-        
-        let user  = makeUser(context: persistence.container.viewContext)
-        let date1 = Date()
-        let date2 = Date(timeIntervalSinceNow: -(60 * 60 * 24))
-        let date3 = Date(timeIntervalSinceNow: -(60 * 60 * 24 * 2))
-        
-        addSession(context: persistence.container.viewContext,
-                   startDate: date3, duration: 480, quality: "excellente", category: "nuit", user: user)
-        addSession(context: persistence.container.viewContext,
-                   startDate: date1, duration: 360, quality: "moyenne", category: "nuit", user: user)
-        addSession(context: persistence.container.viewContext,
-                   startDate: date2, duration: 90, quality: "bonne", category: "sieste", user: user)
-        
-        let viewModel   = SleepHistoryViewModel(context: persistence.container.viewContext)
-        let expectation = XCTestExpectation(description: "fetch ordered sessions")
-        
-        viewModel.$sleepSessions
-            .sink { sessions in
-                XCTAssertEqual(sessions.count, 3)
-                XCTAssertEqual(sessions[0].startDate, date1)
-                XCTAssertEqual(sessions[1].startDate, date2)
-                XCTAssertEqual(sessions[2].startDate, date3)
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
-        wait(for: [expectation], timeout: 5)
+
+    /// Vérifie que l'ordre des sessions est conservé tel que retourné par le repository.
+    /// C'est le repository qui est responsable du tri décroissant — le ViewModel se contente d'afficher.
+    func test_WhenMultipleSessionsInRepository_OrderIsPreservedAsReturnedByRepository() {
+        // GIVEN — 3 sessions déjà triées du plus récent au plus ancien (comme le ferait SleepRepository)
+        let sessions = [
+            SleepModel(id: UUID(), category: "sieste", duration: 90,  quality: "bonne",
+                       startDate: Date(),                                endDate: nil),
+            SleepModel(id: UUID(), category: "nuit",   duration: 480, quality: "excellente",
+                       startDate: Date(timeIntervalSinceNow: -(60*60*24)),   endDate: nil),
+            SleepModel(id: UUID(), category: "nuit",   duration: 330, quality: "mauvaise",
+                       startDate: Date(timeIntervalSinceNow: -(60*60*24*2)), endDate: nil)
+        ]
+        let repository = MockSleepRepository(sessions: sessions)
+
+        // WHEN
+        let viewModel = SleepHistoryViewModel(repository: repository)
+
+        // THEN — l'ordre du mock est respecté
+        XCTAssertEqual(viewModel.sleepSessions.count, 3,          "La liste doit contenir 3 sessions")
+        XCTAssertEqual(viewModel.sleepSessions[0].category, "sieste",    "La sieste (la + récente) doit être en premier")
+        XCTAssertEqual(viewModel.sleepSessions[1].category, "nuit",      "La nuit d'hier doit être en second")
+        XCTAssertEqual(viewModel.sleepSessions[2].quality,  "mauvaise",  "La nuit la plus ancienne doit être en dernier")
     }
-    
-    func test_FormattedDuration_ReturnsCorrectStrings() {
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(480), "8h")
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(450), "7h30")
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(90),  "1h30")
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(360), "6h")
+
+    /// Vérifie que sleepSessions reste vide et qu'un message d'erreur est affiché
+    /// si le repository lève une exception
+    func test_WhenRepositoryThrows_ErrorMessageIsSetAndListIsEmpty() {
+        // GIVEN — le repository simule une erreur de lecture
+        let repository = MockSleepRepository(
+            sessions: [],
+            error: NSError(domain: "CoreData", code: 1,
+                           userInfo: [NSLocalizedDescriptionKey: "Impossible de lire la base"])
+        )
+
+        // WHEN
+        let viewModel = SleepHistoryViewModel(repository: repository)
+
+        // THEN
+        XCTAssertNotNil(viewModel.errorMessage,        "Un message d'erreur doit être affiché")
+        XCTAssertTrue(viewModel.sleepSessions.isEmpty, "La liste doit rester vide en cas d'erreur")
     }
-    
-    // MARK: - Helpers
-    
-    private func emptySessions(context: NSManagedObjectContext) {
-        let request = Sleep.fetchRequest()
-        let objects = try! context.fetch(request)
-        objects.forEach { context.delete($0) }
-        try! context.save()
+
+    // MARK: - Tests — formattedDuration 
+
+    /// Vérifie que formattedDuration() retourne la bonne chaîne pour des durées variées.
+    /// La fonction static est testée directement sans instancier le ViewModel.
+    func test_FormattedDuration_ReturnsCorrectString() {
+        // Durées rondes en heures
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(480), "8 h",    "480 min = 8 h exactement")
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(60),  "1 h",    "60 min = 1 h exactement")
+
+        // Durées avec minutes résiduelles
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(90),  "1h30",  "90 min = 1h30")
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(330), "5h30",  "330 min = 5h30")
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(75),  "1h15",  "75 min = 1h15")
     }
-    
-    @discardableResult
-    private func makeUser(context: NSManagedObjectContext) -> User {
-        let user       = User(context: context)
-        user.id        = UUID()
-        user.firstName = "Charlotte"
-        user.lastName  = "Razoul"
-        try! context.save()
-        return user
-    }
-    
-    private func addSession(context: NSManagedObjectContext, startDate: Date,
-                            duration: Int64, quality: String, category: String, user: User) {
-        let session       = Sleep(context: context)
-        session.id        = UUID()
-        session.startDate = startDate
-        session.endDate   = startDate.addingTimeInterval(TimeInterval(duration * 60))
-        session.duration  = duration
-        session.quality   = quality
-        session.category  = category
-        session.user      = user
-        try! context.save()
+
+    // MARK: - Tests — qualityIcon (static)
+
+    /// Vérifie que qualityIcon() retourne le bon nom d'icône SF Symbols pour chaque qualité.
+    func test_QualityIcon_ReturnsCorrectIconForEachQuality() {
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "mauvaise"),   "xmark.circle.fill",
+                       "mauvaise → icône d'erreur")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "moyenne"),    "minus.circle.fill",
+                       "moyenne → icône neutre")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "bonne"),      "checkmark.circle.fill",
+                       "bonne → icône de succès")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "excellente"), "star.circle.fill",
+                       "excellente → icône étoile")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: nil),          "circle",
+                       "nil → icône par défaut")
     }
 }

@@ -37,6 +37,9 @@
 		62DA1A482F64B59B00690890 /* UserRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DA1A472F64B59B00690890 /* UserRepositoryProtocol.swift */; };
 		62DA1A4A2F64B66F00690890 /* ExerciseRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DA1A492F64B66F00690890 /* ExerciseRepositoryProtocol.swift */; };
 		62DA1A4C2F64B91E00690890 /* SleepRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DA1A4B2F64B91E00690890 /* SleepRepositoryProtocol.swift */; };
+		62DA1AA02F67219200690890 /* MockUserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DA1A9F2F67219200690890 /* MockUserRepository.swift */; };
+		62DA1AA22F67279E00690890 /* MockExerciseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DA1AA12F67279E00690890 /* MockExerciseRepository.swift */; };
+		62DA1AA42F672DF100690890 /* MockSleepRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DA1AA32F672DF100690890 /* MockSleepRepository.swift */; };
 		62DE74B52F62111B008128F6 /* UserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DE74B42F62111B008128F6 /* UserRepository.swift */; };
 		62DE74B72F621137008128F6 /* ExerciseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DE74B62F621137008128F6 /* ExerciseRepository.swift */; };
 		62DE74B92F6220BE008128F6 /* SleepRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DE74B82F6220BE008128F6 /* SleepRepository.swift */; };
@@ -93,6 +96,9 @@
 		62DA1A472F64B59B00690890 /* UserRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepositoryProtocol.swift; sourceTree = "<group>"; };
 		62DA1A492F64B66F00690890 /* ExerciseRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepositoryProtocol.swift; sourceTree = "<group>"; };
 		62DA1A4B2F64B91E00690890 /* SleepRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepRepositoryProtocol.swift; sourceTree = "<group>"; };
+		62DA1A9F2F67219200690890 /* MockUserRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockUserRepository.swift; sourceTree = "<group>"; };
+		62DA1AA12F67279E00690890 /* MockExerciseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExerciseRepository.swift; sourceTree = "<group>"; };
+		62DA1AA32F672DF100690890 /* MockSleepRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSleepRepository.swift; sourceTree = "<group>"; };
 		62DE74B42F62111B008128F6 /* UserRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepository.swift; sourceTree = "<group>"; };
 		62DE74B62F621137008128F6 /* ExerciseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepository.swift; sourceTree = "<group>"; };
 		62DE74B82F6220BE008128F6 /* SleepRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepRepository.swift; sourceTree = "<group>"; };
@@ -171,6 +177,7 @@
 		53E587452B235E9000E4EF99 /* AristaTests */ = {
 			isa = PBXGroup;
 			children = (
+				62DA1A9E2F6720CA00690890 /* Mocks */,
 				623D217E2F56796C0022925E /* ViewModelsTests */,
 				623D21772F566E340022925E /* RepositoryTests */,
 				53E587462B235E9000E4EF99 /* AristaTests.swift */,
@@ -267,6 +274,16 @@
 				62B2C0032F50BCFD001C37E2 /* DefaultData.swift */,
 			);
 			path = CoreData;
+			sourceTree = "<group>";
+		};
+		62DA1A9E2F6720CA00690890 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				62DA1A9F2F67219200690890 /* MockUserRepository.swift */,
+				62DA1AA12F67279E00690890 /* MockExerciseRepository.swift */,
+				62DA1AA32F672DF100690890 /* MockSleepRepository.swift */,
+			);
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -428,12 +445,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				53E587472B235E9000E4EF99 /* AristaTests.swift in Sources */,
+				62DA1AA22F67279E00690890 /* MockExerciseRepository.swift in Sources */,
 				623D217D2F5678B70022925E /* SleepRepositoryTests.swift in Sources */,
 				623D21862F567AB40022925E /* SleepHistoryViewModelTests.swift in Sources */,
 				623D21822F567A350022925E /* ExerciseListViewModelTests.swift in Sources */,
 				623D21802F5679950022925E /* UserDataViewModelTests.swift in Sources */,
 				623D217B2F5678360022925E /* UserRepositoryTests.swift in Sources */,
 				623D21792F566F3D0022925E /* ExerciceRepositoryTests.swift in Sources */,
+				62DA1AA42F672DF100690890 /* MockSleepRepository.swift in Sources */,
+				62DA1AA02F67219200690890 /* MockUserRepository.swift in Sources */,
 				623D21842F567A680022925E /* AddExerciseViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

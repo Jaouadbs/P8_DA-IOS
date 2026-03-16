@@ -85,7 +85,7 @@ private struct ExerciseRow: View {
                     Spacer()
                     Text(exercise.startDate, style: .date)
                         .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
 
                 HStack(spacing: 16){

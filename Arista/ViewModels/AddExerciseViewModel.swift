@@ -32,8 +32,8 @@ final class AddExerciseViewModel: ObservableObject {
     
     // MARK: - Init
     init(
-        exerciseRepository: ExerciseRepositoryProtocol,
-        userRepository: UserRepositoryProtocol
+        exerciseRepository: any ExerciseRepositoryProtocol,
+        userRepository: any UserRepositoryProtocol
     ) {
         self.exerciseRepository = exerciseRepository
         self.userRepository = userRepository
@@ -58,7 +58,7 @@ final class AddExerciseViewModel: ObservableObject {
         }
         // Vérifie qu'un utilisateur existe en base avant de lier l'exercice
         guard (try? userRepository.getUser()) != nil else {
-            errorMessage = "Aucun utilisateur trouvé. Impossible d'enregistrer l'exercice "
+            errorMessage = "Aucun utilisateur trouvé. Impossible d'enregistrer l'exercice"
             return false
         }
         //Envoi des données au Repository

@@ -30,7 +30,7 @@ struct UserRepository : UserRepositoryProtocol {
             email:                  user.email          ?? "",
             dailyStepGoal:          user.dailyStepGoal,
             sleepHoursGoal:         user.sleepHoursGoal,
-            hydrationMlGoal:        user.dailyStepGoal,
+            hydrationMlGoal:        user.hydrationMlGoal,
             caloriesBurnedGoal:     user.caloriesBurnedGoal
         )
     }

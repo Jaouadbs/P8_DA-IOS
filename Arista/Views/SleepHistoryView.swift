@@ -65,7 +65,7 @@ private struct SleepRow: View {
                     // La Date  poussée à droite
                     Text(session.startDate, style: .date)
                         .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
                 // Ligne du bas / Durée et intensité
                 HStack(spacing: 16) {

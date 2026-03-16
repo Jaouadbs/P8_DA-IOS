@@ -36,7 +36,7 @@ final class UserDataViewModel: ObservableObject {
     // MARK: - Fetch
     
     // récupère les données d'utilisateur via repository
-    private func fetchUserData() {
+     func fetchUserData() {
         do {
             //Le Repository nous renvoie un Data Transfert Object simple, pas une entité CoreData
             guard let user = try repository.getUser() else {

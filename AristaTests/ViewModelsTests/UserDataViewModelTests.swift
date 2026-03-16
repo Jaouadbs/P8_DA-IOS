@@ -3,89 +3,94 @@
 //  AristaTests
 //
 //  Created by Jaouad on 03/03/2026.
+
+//  Ce qu'on teste :
+//  1. Comportement quand la base est vide (aucun utilisateur)
+//  2. Comportement quand le repository lève une erreur
+//  3. Remplissage correct des propriétés Published quand l'utilisateur existe
 //
 
-
 import XCTest
-import CoreData
-import Combine
 @testable import Arista
 
 final class UserDataViewModelTests: XCTestCase {
 
-    var cancellables = Set<AnyCancellable>()
-
-    func test_WhenNoUserIsInDatabase_ErrorMessageIsSet() {
-        let persistence = PersistenceController(inMemory: true)
-        emptyUsers(context: persistence.container.viewContext)
-
-        let viewModel   = UserDataViewModel(context: persistence.container.viewContext)
-        let expectation = XCTestExpectation(description: "error message set")
-
-        viewModel.$errorMessage
-            .compactMap { $0 }
-            .sink { message in
-                XCTAssertFalse(message.isEmpty)
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-
-        wait(for: [expectation], timeout: 5)
-    }
-
-    func test_WhenUserExistsInDatabase_PropertiesAreCorrectlyFilled() {
-        let persistence = PersistenceController(inMemory: true)
-        emptyUsers(context: persistence.container.viewContext)
-
-        addUser(context: persistence.container.viewContext,
-                firstName: "Charlotte", lastName: "Razoul",
-                email: "charlotte@example.com", stepGoal: 10_000,
-                sleepGoal: 480, hydrationGoal: 2_000, caloriesGoal: 500)
-
-        let viewModel   = UserDataViewModel(context: persistence.container.viewContext)
-        let expectation = XCTestExpectation(description: "properties filled")
-
-        viewModel.$firstName
-            .filter { !$0.isEmpty }
-            .sink { _ in
-                XCTAssertEqual(viewModel.firstName,          "Charlotte")
-                XCTAssertEqual(viewModel.lastName,           "Razoul")
-                XCTAssertEqual(viewModel.email,              "charlotte@example.com")
-                XCTAssertEqual(viewModel.dailyStepGoal,      10_000)
-                XCTAssertEqual(viewModel.sleepHoursGoal,     480)
-                XCTAssertEqual(viewModel.hydrationMlGoal,    2_000)
-                XCTAssertEqual(viewModel.caloriesBurnedGoal, 500)
-                XCTAssertNil(viewModel.errorMessage)
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-
-        wait(for: [expectation], timeout: 5)
-    }
-
     // MARK: - Helpers
 
-    private func emptyUsers(context: NSManagedObjectContext) {
-        let request = User.fetchRequest()
-        let objects = try! context.fetch(request)
-        objects.forEach { context.delete($0) }
-        try! context.save()
+    /// Crée un UserModel représentant Charlotte Razoul avec des valeurs connues.
+    /// Réutilisé dans tous les tests qui nécessitent un utilisateur valide.
+    private func makeCharlotte() -> UserModel {
+        UserModel(
+            firstName:          "Charlotte",
+            lastName:           "Razoul",
+            email:              "charlotte@example.com",
+            dailyStepGoal:      10_000,
+            sleepHoursGoal:     480,    // 8h en minutes
+            hydrationMlGoal:    2_000,
+            caloriesBurnedGoal: 500
+        )
     }
 
-    private func addUser(context: NSManagedObjectContext, firstName: String, lastName: String,
-                         email: String, stepGoal: Int64, sleepGoal: Int64,
-                         hydrationGoal: Int64, caloriesGoal: Int64) {
-        let user                = User(context: context)
-        user.id                 = UUID()
-        user.firstName          = firstName
-        user.lastName           = lastName
-        user.email              = email
-        user.dailyStepGoal      = stepGoal
-        user.sleepHoursGoal     = sleepGoal
-        user.hydrationMlGoal    = hydrationGoal
-        user.caloriesBurnedGoal = caloriesGoal
-        user.createdAt          = Date()
-        user.updatedAt          = Date()
-        try! context.save()
+    // MARK: - Tests — base vide
+
+    /// Vérifie que errorMessage est renseigné quand le repository ne retourne aucun utilisateur.
+    /// Les propriétés Published doivent rester à leurs valeurs par défaut (chaînes vides, 0).
+    func test_WhenRepositoryReturnsNil_ErrorMessageIsSet() {
+        // GIVEN — repository vide : aucun utilisateur en base
+        let repo = MockUserRepository()
+        repo.stubbedUser = nil
+
+        // WHEN — le ViewModel tente de charger les données à l'init
+        let viewModel = UserDataViewModel(repository: repo)
+
+        // THEN — un message d'erreur doit être affiché à l'utilisateur
+        XCTAssertNotNil(viewModel.errorMessage,         "errorMessage doit être défini si aucun utilisateur trouvé")
+        XCTAssertFalse(viewModel.errorMessage!.isEmpty, "Le message d'erreur ne doit pas être vide")
+        // Les propriétés doivent rester à leurs valeurs par défaut
+        XCTAssertEqual(viewModel.firstName, "", "firstName doit rester vide si pas d'utilisateur")
+        XCTAssertEqual(viewModel.lastName,  "", "lastName doit rester vide si pas d'utilisateur")
+    }
+
+    // MARK: - Tests — erreur du repository
+
+    /// Vérifie que errorMessage est renseigné quand le repository lève une exception.
+    /// Cela simule un problème de lecture CoreData (base corrompue, erreur d'I/O...).
+    func test_WhenRepositoryThrows_ErrorMessageIsSet() {
+        // GIVEN — le repository simule une erreur de lecture
+        let repo = MockUserRepository()
+        repo.errorToThrow = NSError(domain: "CoreData", code: 1)
+
+        // WHEN
+        let viewModel = UserDataViewModel(repository: repo)
+
+        // THEN — le ViewModel doit capturer l'erreur et l'exposer via errorMessage
+        XCTAssertNotNil(viewModel.errorMessage,
+                        "errorMessage doit être défini si le repository lève une erreur")
+        // Les données ne doivent pas être renseignées en cas d'erreur
+        XCTAssertEqual(viewModel.firstName, "", "firstName doit rester vide en cas d'erreur")
+    }
+
+    // MARK: - Tests — cas nominal
+
+    /// Vérifie que toutes les propriétés Published sont correctement remplies
+    /// quand le repository retourne un utilisateur valide.
+    func test_WhenUserExists_AllPropertiesAreCorrectlyFilled() {
+        // GIVEN — Charlotte Razoul existe en base
+        let repo = MockUserRepository()
+        repo.stubbedUser = makeCharlotte()
+
+        // WHEN
+        let viewModel = UserDataViewModel(repository: repo)
+
+        // THEN — toutes les propriétés doivent correspondre au UserModel retourné
+        XCTAssertEqual(viewModel.firstName,          "Charlotte",             "Le prénom doit être correctement chargé")
+        XCTAssertEqual(viewModel.lastName,           "Razoul",                "Le nom doit être correctement chargé")
+        XCTAssertEqual(viewModel.email,              "charlotte@example.com", "L'email doit être correctement chargé")
+        XCTAssertEqual(viewModel.dailyStepGoal,      10_000,                  "L'objectif de pas doit être correctement chargé")
+        XCTAssertEqual(viewModel.sleepHoursGoal,     480,                     "L'objectif de sommeil (480 min = 8h) doit être correct")
+        XCTAssertEqual(viewModel.hydrationMlGoal,    2_000,                   "L'objectif d'hydratation doit être correctement chargé")
+        XCTAssertEqual(viewModel.caloriesBurnedGoal, 500,                     "L'objectif de calories doit être correctement chargé")
+        // Aucune erreur ne doit être affichée si le chargement a réussi
+        XCTAssertNil(viewModel.errorMessage, "errorMessage doit être nil si l'utilisateur est trouvé")
     }
 }
