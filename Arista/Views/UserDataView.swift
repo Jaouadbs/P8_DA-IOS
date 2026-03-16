@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UserDataView: View {
     @ObservedObject var viewModel : UserDataViewModel
-
+    
     var body: some View {
         NavigationStack {
             List {
@@ -41,7 +41,7 @@ private struct LabeledRow: View {
     let icon: String
     let label: String
     let value: String
-
+    
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
@@ -62,10 +62,10 @@ private struct LabeledRow: View {
 #Preview {
     // 1. Création d'un Repository de test (Mock)
     let mockRepo = MockUserRepository()
-
+    
     // 2. Injection du Repo dans le ViewModel
     let viewModel = UserDataViewModel(repository: mockRepo)
-
+    
     // 3. Retour de la vue avec le ViewModel prêt
     UserDataView(viewModel: viewModel)
 }

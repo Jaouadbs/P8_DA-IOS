@@ -115,7 +115,7 @@ final class ExerciseRepositoryTests: XCTestCase {
 
         let result = try repository.getExercises()
 
-        //  on vérifie que la couche View ne reçoit jamais d'objets 'Exercise' (CoreData)
+        //  on vérifie que la couche View ne reçoit jamais d'objets 'Exercise' de (CoreData)
         // mais uniquement des ExerciseModel.
         XCTAssertFalse(result.isEmpty)
         XCTAssertTrue(type(of: result[0]) == ExerciseModel.self)
@@ -196,8 +196,8 @@ final class ExerciseRepositoryTests: XCTestCase {
         XCTAssertEqual(result[0].category, "musculation")
     }
 
-    
-    // MARK: - Helpers (Méthodes privées d'insertion rapide)
+
+    // MARK: - Helpers (Méthodes privées d'insertion )
 
     @discardableResult
     private func insertExercise(

@@ -5,10 +5,10 @@
 //  Created by Jaouad on 03/03/2026.
 //
 //  Ce qu'on teste :
-//  1. Chargement des sessions depuis le repository (vide, 1 session, plusieurs)
-//  2. Comportement en cas d'erreur du repository
-//  3. Formatage statique des durées (formattedDuration)
-//  4. Icône et couleur selon la qualité du sommeil
+//      Chargement des sessions depuis le repository (vide, 1 session, plusieurs)
+//      Comportement en cas d'erreur du repository
+//      Formatage statique des durées (formattedDuration)
+//      Icône et couleur selon la qualité du sommeil
 //
 
 import XCTest

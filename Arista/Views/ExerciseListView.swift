@@ -10,7 +10,7 @@ import SwiftUI
 struct ExerciseListView: View {
     @ObservedObject var viewModel : ExerciseListViewModel
     @State private var showAddExercise = false
-
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -53,11 +53,11 @@ struct ExerciseListView: View {
                    onDismiss: { viewModel.reload()}) {
                 AddExerciseView(viewModel: viewModel.addExerciseViewModel)
             }
-            .alert("Erreur", isPresented: .constant(viewModel.errorMessage != nil)){
-                Button("OK") {}
-            } message: {
-                Text(viewModel.errorMessage ?? "")
-            }
+                   .alert("Erreur", isPresented: .constant(viewModel.errorMessage != nil)){
+                       Button("OK") {}
+                   } message: {
+                       Text(viewModel.errorMessage ?? "")
+                   }
         }
     }
 }
@@ -66,7 +66,7 @@ struct ExerciseListView: View {
 
 private struct ExerciseRow: View {
     let exercise: ExerciseModel
-
+    
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: ExerciseListViewModel.icon(for: exercise.category))
@@ -75,9 +75,9 @@ private struct ExerciseRow: View {
                 .frame(width: 44,height: 44)
                 .background(ExerciseListViewModel.color(for: exercise.category).gradient)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
-
+            
             VStack (alignment: .leading, spacing: 6) {
-
+                
                 HStack {
                     Text(exercise.category.capitalized )
                         .fontWeight(.semibold)
@@ -87,7 +87,7 @@ private struct ExerciseRow: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-
+                
                 HStack(spacing: 16){
                     Label(
                         ExerciseListViewModel.formattedDuration(exercise.duration),
@@ -97,9 +97,9 @@ private struct ExerciseRow: View {
                         exercise.intensity.capitalized ,
                         systemImage: "bolt.fill"
                     )
-
+                    
                 }
-
+                
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             }
@@ -116,7 +116,7 @@ private struct ExerciseRow: View {
     let mockRepo = PreviewExerciseRepository(withData: false)
     let mockUserRepo = PreviewUserRepository()
     let viewModel = ExerciseListViewModel(exerciseRepository: mockRepo, userRepository: mockUserRepo)
-
+    
     return ExerciseListView(viewModel: viewModel)
 }
 
@@ -124,7 +124,7 @@ private struct ExerciseRow: View {
     let mockRepo = PreviewExerciseRepository(withData: true)
     let mockUserRepo = PreviewUserRepository()
     let viewModel = ExerciseListViewModel(exerciseRepository: mockRepo, userRepository: mockUserRepo)
-
+    
     return ExerciseListView(viewModel: viewModel)
 }
 
@@ -133,7 +133,7 @@ private struct ExerciseRow: View {
 
 private struct PreviewExerciseRepository: ExerciseRepositoryProtocol {
     let withData: Bool
-
+    
     func getExercises() throws -> [ExerciseModel] {
         guard withData else { return [] }
         return [
@@ -149,10 +149,10 @@ private struct PreviewExerciseRepository: ExerciseRepositoryProtocol {
             ExerciseModel(id: UUID(), category: "marche", duration: 30, intensity: "elevee", startDate: Date()),
             ExerciseModel(id: UUID(), category: "sport", duration: 30, intensity: "moyen", startDate: Date()),
             ExerciseModel(id: UUID(), category: "autres", duration: 30, intensity: "elevee", startDate: Date()),
-
+            
         ]
     }
-
+    
     func addExercise(category: String, duration: Int64, intensity: String, startDate: Date) throws {}
     func deleteExercise(withId id: UUID) throws {}
 }

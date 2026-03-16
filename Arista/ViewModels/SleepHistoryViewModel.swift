@@ -18,22 +18,22 @@ class SleepHistoryViewModel: ObservableObject {
     // MARK: - Private
     ///Le protocole qui permet d'accéder aux données sans savoir comment elles sont stockées.
     private let repository : SleepRepositoryProtocol
-
+    
     // MARK: - Init
-
+    
     /// Initialisation avec injection du repository de sommeil
     init(repository: SleepRepositoryProtocol) {
         self.repository = repository
         fetchSleepSessions()
     }
-
+    
     // MARK: - Fetch
-
+    
     /// le ViewModel décide quand charger les données des sessions depuis le repository
     private func fetchSleepSessions() {
         do {
             sleepSessions = try repository.getSleepSessions()
-
+            
         } catch {
             errorMessage = "Erreur lors de la récupération des sessions de sommeil."
             print("SleepHistoryViewModel - fetchSleepSessions \(error.localizedDescription)")
@@ -46,7 +46,7 @@ class SleepHistoryViewModel: ObservableObject {
     static func formattedDuration(_ minutes: Int64) -> String {
         let h = minutes / 60
         let m = minutes % 60
-
+        
         // Cas de moins d'une heure
         if h == 0 {return"\(m) min"}
         // Cas d'une heure pile

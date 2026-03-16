@@ -9,9 +9,9 @@ import SwiftUI
 
 
 struct SleepHistoryView: View {
-
+    
     @ObservedObject  var viewModel : SleepHistoryViewModel
-
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -41,7 +41,7 @@ struct SleepHistoryView: View {
 // MARK: - Sous-vue SleepRow
 private struct SleepRow: View {
     let session: SleepModel
-
+    
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             // l'icone fixe à gauche
@@ -53,7 +53,7 @@ private struct SleepRow: View {
                     (session.category == "sieste" ? Color.orange : Color.indigo).gradient
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10))
-
+            
             // bloc de données
             VStack(alignment: .leading,spacing: 6) {
                 // Ligne du titre + Date
@@ -61,7 +61,7 @@ private struct SleepRow: View {
                     Text(session.category.capitalized)
                         .fontWeight(.semibold)
                     Spacer()
-
+                    
                     // La Date  poussée à droite
                     Text(session.startDate, style: .date)
                         .font(.caption)
@@ -85,7 +85,7 @@ private struct SleepRow: View {
                 .foregroundStyle(.secondary)
             }
         }
-
+        
         .padding(.vertical, 8)
     }
 }
@@ -108,7 +108,7 @@ private struct SleepRow: View {
 
 private struct PreviewSleepRepository: SleepRepositoryProtocol {
     let withData: Bool
-
+    
     func getSleepSessions() throws -> [SleepModel] {
         guard withData else { return [] }
         let now = Date()

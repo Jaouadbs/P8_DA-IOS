@@ -47,7 +47,7 @@ struct AddExerciseView: View {
             
             .navigationTitle("Ajouter un exercice")
             .navigationBarTitleDisplayMode(.inline)
-
+            
             // Barre d'outils
             .toolbar {
                 ToolbarItem(placement: .cancellationAction){
@@ -81,12 +81,12 @@ struct AddExerciseView: View {
     // Injection d'un Mock pour la Preview sans CoreData
     let mockExerciseRepo = PreviewAddExerciseRepository()
     let mockUserRepo = PreviewAddUserRepository()
-
+    
     let viewModel = AddExerciseViewModel(
         exerciseRepository: mockExerciseRepo,
         userRepository: mockUserRepo
     )
-
+    
     return AddExerciseView(viewModel: viewModel)
 }
 

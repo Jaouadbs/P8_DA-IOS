@@ -10,26 +10,26 @@ import Foundation
 import CoreData
 
 struct SleepRepository: SleepRepositoryProtocol {
-
+    
     let viewContext: NSManagedObjectContext
-
+    
     // Initialisation: Par défaut, on utilise le contexte principal
     init(viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.viewContext = viewContext
     }
-
+    
     /// Récupère toutes les sessions de sommeil, triées par date décroissante
     /// les Convertit en SleepModel
     func getSleepSessions() throws -> [SleepModel] {
         let request = Sleep.fetchRequest()
-
+        
         // Organise les resultats de manière décroissante
         request.sortDescriptors = [
             NSSortDescriptor(SortDescriptor<Sleep>(\.startDate, order: .reverse))
         ]
         //On utilise compactMap pour transformer chaque objet CoreData en un objet de transfert de données simple.
         return try viewContext.fetch(request).compactMap { session in
-
+            
             // On verifié ici que les data essentielle ne sont pas nil
             guard let id        = session.id,
                   let category  = session.category,
@@ -52,6 +52,6 @@ struct SleepRepository: SleepRepositoryProtocol {
             )
         }
     }
-
+    
 }
 

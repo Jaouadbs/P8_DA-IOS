@@ -36,14 +36,14 @@ final class UserDataViewModel: ObservableObject {
     // MARK: - Fetch
     
     // récupère les données d'utilisateur via repository
-     func fetchUserData() {
+    func fetchUserData() {
         do {
             //Le Repository nous renvoie un Data Transfert Object simple, pas une entité CoreData
             guard let user = try repository.getUser() else {
                 errorMessage = "Aucun utilisateur trouvé."
                 return
             }
-            // On transfère les données du DTO vers les propriétés @Published.-> Maj de la Vue.
+            // On transfère les données du UserModel vers les propriétés @Published.-> Maj de la Vue.
             firstName          = user.firstName
             lastName           = user.lastName
             email              = user.email
