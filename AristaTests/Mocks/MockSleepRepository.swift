@@ -1,4 +1,5 @@
 //
+<<<<<<< HEAD
 //  MockSleepRepository.swift
 //  AristaTests
 //
@@ -44,3 +45,12 @@ final class MockSleepRepository: SleepRepositoryProtocol {
         return stubbedSessions
     }
 }
+=======
+//  Mocksleeprepository.swift
+//  AristaTests
+//
+//  Created by Jaouad on 15/03/2026.
+//
+
+import Foundation
+>>>>>>> master

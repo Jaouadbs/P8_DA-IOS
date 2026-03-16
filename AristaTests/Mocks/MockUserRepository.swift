@@ -1,9 +1,14 @@
 //
+<<<<<<< HEAD
 //  MockUserRepository.swift
+=======
+//  File.swift
+>>>>>>> master
 //  AristaTests
 //
 //  Created by Jaouad on 15/03/2026.
 //
+<<<<<<< HEAD
 //  Ce Mock simule le comportement du vrai Repository sans toucher à Core Data.
 //  Il permet de tester le ViewModel dans des conditions contrôlées (succès, erreur, données vides).
 //
@@ -49,3 +54,7 @@ final class MockUserRepository : UserRepositoryProtocol {
         return stubbedUser
     }
 }
+=======
+
+import Foundation
+>>>>>>> master

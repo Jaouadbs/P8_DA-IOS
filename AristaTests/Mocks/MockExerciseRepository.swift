@@ -4,6 +4,7 @@
 //
 //  Created by Jaouad on 15/03/2026.
 //
+<<<<<<< HEAD
 //  Mock  simulant une base de données d'exercices.
 //  Permet de vérifier à la fois les données renvoyées et la capture des arguments.
 //
@@ -80,3 +81,7 @@ final class MockExerciseRepository: ExerciseRepositoryProtocol {
         exercises.removeAll() {$0.id == id }
     }
 }
+=======
+
+import Foundation
+>>>>>>> master
