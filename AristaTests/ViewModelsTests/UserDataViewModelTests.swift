@@ -44,11 +44,11 @@ final class UserDataViewModelTests: XCTestCase {
         let viewModel = UserDataViewModel(repository: repo)
         
         // THEN — un message d'erreur doit être affiché à l'utilisateur
-        XCTAssertNotNil(viewModel.errorMessage,         "errorMessage doit être défini si aucun utilisateur trouvé")
-        XCTAssertFalse(viewModel.errorMessage!.isEmpty, "Le message d'erreur ne doit pas être vide")
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertFalse(viewModel.errorMessage!.isEmpty)
         // Les propriétés doivent rester à leurs valeurs par défaut
-        XCTAssertEqual(viewModel.firstName, "", "firstName doit rester vide si pas d'utilisateur")
-        XCTAssertEqual(viewModel.lastName,  "", "lastName doit rester vide si pas d'utilisateur")
+        XCTAssertEqual(viewModel.firstName, "")
+        XCTAssertEqual(viewModel.lastName,  "")
     }
     
     // MARK: - Tests — erreur du repository
@@ -64,10 +64,9 @@ final class UserDataViewModelTests: XCTestCase {
         let viewModel = UserDataViewModel(repository: repo)
         
         // THEN — le ViewModel doit capturer l'erreur et l'exposer via errorMessage
-        XCTAssertNotNil(viewModel.errorMessage,
-                        "errorMessage doit être défini si le repository lève une erreur")
+        XCTAssertNotNil(viewModel.errorMessage)
         // Les données ne doivent pas être renseignées en cas d'erreur
-        XCTAssertEqual(viewModel.firstName, "", "firstName doit rester vide en cas d'erreur")
+        XCTAssertEqual(viewModel.firstName, "")
     }
     
     // MARK: - Tests — cas nominal
@@ -83,14 +82,14 @@ final class UserDataViewModelTests: XCTestCase {
         let viewModel = UserDataViewModel(repository: repo)
         
         // THEN — toutes les propriétés doivent correspondre au UserModel retourné
-        XCTAssertEqual(viewModel.firstName,          "Charlotte",             "Le prénom doit être correctement chargé")
-        XCTAssertEqual(viewModel.lastName,           "Razoul",                "Le nom doit être correctement chargé")
-        XCTAssertEqual(viewModel.email,              "charlotte@example.com", "L'email doit être correctement chargé")
-        XCTAssertEqual(viewModel.dailyStepGoal,      10_000,                  "L'objectif de pas doit être correctement chargé")
-        XCTAssertEqual(viewModel.sleepHoursGoal,     480,                     "L'objectif de sommeil (480 min = 8h) doit être correct")
-        XCTAssertEqual(viewModel.hydrationMlGoal,    2_000,                   "L'objectif d'hydratation doit être correctement chargé")
-        XCTAssertEqual(viewModel.caloriesBurnedGoal, 500,                     "L'objectif de calories doit être correctement chargé")
+        XCTAssertEqual(viewModel.firstName,          "Charlotte")
+        XCTAssertEqual(viewModel.lastName,           "Razoul")
+        XCTAssertEqual(viewModel.email,              "charlotte@example.com")
+        XCTAssertEqual(viewModel.dailyStepGoal,      10_000)
+        XCTAssertEqual(viewModel.sleepHoursGoal,     480)
+        XCTAssertEqual(viewModel.hydrationMlGoal,    2_000)
+        XCTAssertEqual(viewModel.caloriesBurnedGoal, 500)
         // Aucune erreur ne doit être affichée si le chargement a réussi
-        XCTAssertNil(viewModel.errorMessage, "errorMessage doit être nil si l'utilisateur est trouvé")
+        XCTAssertNil(viewModel.errorMessage)
     }
 }

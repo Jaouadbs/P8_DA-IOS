@@ -48,9 +48,9 @@ class SleepHistoryViewModel: ObservableObject {
         let m = minutes % 60
         
         // Cas de moins d'une heure
-        if h == 0 {return"\(m) min"}
+        if h == 0 {return"\(m)min"}
         // Cas d'une heure pile
-        if m == 0 {return"\(h) h"}
+        if m == 0 {return"\(h)h"}
         return "\(h)h\(String(format: "%02d", m))"
     }
     

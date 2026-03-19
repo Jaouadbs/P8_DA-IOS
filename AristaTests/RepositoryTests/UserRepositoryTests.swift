@@ -118,9 +118,38 @@ final class UserRepositoryTests: XCTestCase {
         XCTAssertNotNil(result)
         XCTAssertTrue(type(of: result!) == UserModel.self)
     }
-    
+
+    /// Vérifie que getUser() gère correctement les champs optionnels nil
+    /// en retournant des chaînes vides à la place — couvre les branches ?? ""
+    func test_WhenUserHasNilFields_GetUser_ReturnsEmptyStrings() throws {
+        // GIVEN — on insère un User avec les champs optionnels à nil
+        let user = User(context: context)
+        user.id                = UUID()
+        user.firstName         = nil   // ← force la branche ?? ""
+        user.lastName          = nil   // ← force la branche ?? ""
+        user.email             = nil   // ← force la branche ?? ""
+        user.dailyStepGoal     = 0
+        user.sleepHoursGoal    = 0
+        user.hydrationMlGoal   = 0
+        user.caloriesBurnedGoal = 0
+        user.createdAt         = Date()
+        user.updatedAt         = Date()
+        try context.save()
+
+        let repository = UserRepository(viewContext: context)
+
+        // WHEN
+        let result = try repository.getUser()
+
+        // THEN — les champs nil doivent être remplacés par des chaînes vides
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result?.firstName, "", "firstName nil → chaîne vide")
+        XCTAssertEqual(result?.lastName,  "", "lastName nil → chaîne vide")
+        XCTAssertEqual(result?.email,     "", "email nil → chaîne vide")
+    }
+
     // MARK: - Helpers
-    
+
     /// Méthode pour insérer un User "NSManagedObject" dans le contexte de test
     @discardableResult
     private func insertUser (

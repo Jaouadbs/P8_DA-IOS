@@ -110,7 +110,7 @@ struct ExerciseRepository : ExerciseRepositoryProtocol {
 enum RepositoryError : LocalizedError {
     case userNotFound
     
-    var errorDiscription: String? {
+    var errorDescription: String? {
         switch self {
         case .userNotFound:
             return "Aucun utilisateur trouvé. Impossible d'enregistrer l'exercice"

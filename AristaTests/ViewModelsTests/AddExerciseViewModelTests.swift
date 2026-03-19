@@ -65,9 +65,9 @@ final class AddExerciseViewModelTests: XCTestCase {
         let result = viewModel.addExercise()
         
         // THEN
-        XCTAssertFalse(result,                         "addExercise() doit retourner false si durée = 0")
-        XCTAssertNotNil(viewModel.errorMessage,        "Un message d'erreur doit être affiché")
-        XCTAssertEqual(mockRepo.addExercisesCallCount, 0, "Le repository ne doit pas être appelé")
+        XCTAssertFalse(result)
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(mockRepo.addExercisesCallCount, 0)
     }
     
     /// Vérifie que addExercise() retourne false si la catégorie est vide ou ne contient que des espaces.
@@ -81,9 +81,9 @@ final class AddExerciseViewModelTests: XCTestCase {
         let result = viewModel.addExercise()
         
         // THEN
-        XCTAssertFalse(result,                         "addExercise() doit retourner false si catégorie vide")
-        XCTAssertNotNil(viewModel.errorMessage,        "Un message d'erreur doit être affiché")
-        XCTAssertEqual(mockRepo.addExercisesCallCount, 0, "Le repository ne doit pas être appelé")
+        XCTAssertFalse(result)
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(mockRepo.addExercisesCallCount, 0)
     }
     
     // MARK: - Tests — vérification de l'utilisateur
@@ -100,15 +100,12 @@ final class AddExerciseViewModelTests: XCTestCase {
         let result = viewModel.addExercise()
         
         // THEN
-        XCTAssertFalse(result, "addExercise() doit retourner false si pas d'utilisateur")
+        XCTAssertFalse(result)
         XCTAssertEqual(
             viewModel.errorMessage,
-            "Aucun utilisateur trouvé. Impossible d'enregistrer l'exercice"
-            
-        )
+            "Aucun utilisateur trouvé. Impossible d'enregistrer l'exercice")
         // Le repository exercice ne doit jamais être appelé si l'utilisateur est absent
-        XCTAssertEqual(mockRepo.addExercisesCallCount, 0,
-                       "Le repository d'exercice ne doit pas être appelé sans utilisateur")
+        XCTAssertEqual(mockRepo.addExercisesCallCount, 0)
     }
     
     /// Vérifie que addExercise() retourne false si le UserRepository lève une erreur.
@@ -125,11 +122,10 @@ final class AddExerciseViewModelTests: XCTestCase {
         let result = viewModel.addExercise()
         
         // THEN
-        XCTAssertFalse(result,                  "addExercise() doit retourner false si erreur UserRepository")
-        XCTAssertNotNil(viewModel.errorMessage, "Un message d'erreur doit être affiché")
+        XCTAssertFalse(result)
+        XCTAssertNotNil(viewModel.errorMessage)
         // La vérification utilisateur doit court-circuiter l'appel au repository d'exercice
-        XCTAssertEqual(mockRepo.addExercisesCallCount, 0,
-                       "Le repository d'exercice ne doit pas être appelé si la vérification user échoue")
+        XCTAssertEqual(mockRepo.addExercisesCallCount, 0)
     }
     
     // MARK: - Tests — cas nominal
@@ -149,15 +145,14 @@ final class AddExerciseViewModelTests: XCTestCase {
         let result = viewModel.addExercise()
         
         // THEN
-        XCTAssertTrue(result,                "addExercise() doit retourner true si tout est valide")
-        XCTAssertNil(viewModel.errorMessage, "Aucun message d'erreur ne doit être affiché")
-        XCTAssertEqual(mockRepo.addExercisesCallCount, 1,
-                       "Le repository doit être appelé exactement 1 fois")
+        XCTAssertTrue(result)
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertEqual(mockRepo.addExercisesCallCount, 1)
         // Vérification que le ViewModel transmet correctement les valeurs du formulaire
-        XCTAssertEqual(mockRepo.lastAddedCategory,  "cardio", "La catégorie doit être correctement transmise")
-        XCTAssertEqual(mockRepo.lastAddedDuration,  45,       "La durée doit être correctement transmise")
-        XCTAssertEqual(mockRepo.lastAddedIntensity, "elevee", "L'intensité doit être correctement transmise")
-        XCTAssertEqual(mockRepo.lastAddedStartDate, date,     "La date doit être correctement transmise")
+        XCTAssertEqual(mockRepo.lastAddedCategory,  "cardio")
+        XCTAssertEqual(mockRepo.lastAddedDuration,  45)
+        XCTAssertEqual(mockRepo.lastAddedIntensity, "elevee")
+        XCTAssertEqual(mockRepo.lastAddedStartDate, date)
     }
     
     /// Vérifie que addExercise() retourne false si le ExerciseRepository lève une erreur
@@ -177,8 +172,8 @@ final class AddExerciseViewModelTests: XCTestCase {
         let result = viewModel.addExercise()
         
         // THEN
-        XCTAssertFalse(result,                  "addExercise() doit retourner false si erreur ExerciseRepository")
-        XCTAssertNotNil(viewModel.errorMessage, "Le message d'erreur du repository doit être affiché")
+        XCTAssertFalse(result)
+        XCTAssertNotNil(viewModel.errorMessage)
     }
     
     // MARK: - Tests — formatage statique
@@ -186,9 +181,9 @@ final class AddExerciseViewModelTests: XCTestCase {
     /// Vérifie que displayIntensity() retourne le libellé lisible pour chaque valeur brute.
     /// Ces fonctions static sont testées directement sans instancier le ViewModel.
     func test_DisplayIntensity_ReturnsCorrectLabels() {
-        XCTAssertEqual(AddExerciseViewModel.displayIntensity("faible"),      "Faible",      "faible → Faible")
-        XCTAssertEqual(AddExerciseViewModel.displayIntensity("moderee"),     "Modérée",     "moderee → Modérée")
-        XCTAssertEqual(AddExerciseViewModel.displayIntensity("elevee"),      "Elevée",      "elevee → Elevée")
-        XCTAssertEqual(AddExerciseViewModel.displayIntensity("tres_elevee"), "Très élevée", "tres_elevee → Très élevée")
+        XCTAssertEqual(AddExerciseViewModel.displayIntensity("faible"),      "Faible")
+        XCTAssertEqual(AddExerciseViewModel.displayIntensity("moderee"),     "Modérée")
+        XCTAssertEqual(AddExerciseViewModel.displayIntensity("elevee"),      "Elevée")
+        XCTAssertEqual(AddExerciseViewModel.displayIntensity("tres_elevee"), "Très élevée")
     }
 }

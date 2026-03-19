@@ -28,8 +28,8 @@ final class SleepHistoryViewModelTests: XCTestCase {
         let viewModel = SleepHistoryViewModel(repository: repository)
 
         // THEN
-        XCTAssertTrue(viewModel.sleepSessions.isEmpty, "La liste doit être vide si le repository est vide")
-        XCTAssertNil(viewModel.errorMessage,           "Aucune erreur ne doit être affichée pour une liste vide")
+        XCTAssertTrue(viewModel.sleepSessions.isEmpty)
+        XCTAssertNil(viewModel.errorMessage)
     }
 
     /// Vérifie que la session retournée par le repository est bien exposée dans sleepSessions,
@@ -51,11 +51,11 @@ final class SleepHistoryViewModelTests: XCTestCase {
         let viewModel = SleepHistoryViewModel(repository: repository)
 
         // THEN
-        XCTAssertEqual(viewModel.sleepSessions.count, 1,       "La liste doit contenir 1 session")
-        XCTAssertEqual(viewModel.sleepSessions[0].category,  "nuit",  "La catégorie doit être 'nuit'")
-        XCTAssertEqual(viewModel.sleepSessions[0].duration,  480,     "La durée doit être 480 minutes")
-        XCTAssertEqual(viewModel.sleepSessions[0].quality,   "bonne", "La qualité doit être 'bonne'")
-        XCTAssertEqual(viewModel.sleepSessions[0].startDate, date,    "La date doit être correctement transmise")
+        XCTAssertEqual(viewModel.sleepSessions.count, 1)
+        XCTAssertEqual(viewModel.sleepSessions[0].category,  "nuit")
+        XCTAssertEqual(viewModel.sleepSessions[0].duration,  480)
+        XCTAssertEqual(viewModel.sleepSessions[0].quality,   "bonne")
+        XCTAssertEqual(viewModel.sleepSessions[0].startDate, date)
     }
 
     /// Vérifie que l'ordre des sessions est conservé tel que retourné par le repository.
@@ -76,10 +76,10 @@ final class SleepHistoryViewModelTests: XCTestCase {
         let viewModel = SleepHistoryViewModel(repository: repository)
 
         // THEN — l'ordre du mock est respecté
-        XCTAssertEqual(viewModel.sleepSessions.count, 3,          "La liste doit contenir 3 sessions")
-        XCTAssertEqual(viewModel.sleepSessions[0].category, "sieste",    "La sieste (la + récente) doit être en premier")
-        XCTAssertEqual(viewModel.sleepSessions[1].category, "nuit",      "La nuit d'hier doit être en second")
-        XCTAssertEqual(viewModel.sleepSessions[2].quality,  "mauvaise",  "La nuit la plus ancienne doit être en dernier")
+        XCTAssertEqual(viewModel.sleepSessions.count, 3)
+        XCTAssertEqual(viewModel.sleepSessions[0].category, "sieste")
+        XCTAssertEqual(viewModel.sleepSessions[1].category, "nuit")
+        XCTAssertEqual(viewModel.sleepSessions[2].quality,  "mauvaise")
     }
 
     /// Vérifie que sleepSessions reste vide et qu'un message d'erreur est affiché
@@ -96,8 +96,8 @@ final class SleepHistoryViewModelTests: XCTestCase {
         let viewModel = SleepHistoryViewModel(repository: repository)
 
         // THEN
-        XCTAssertNotNil(viewModel.errorMessage,        "Un message d'erreur doit être affiché")
-        XCTAssertTrue(viewModel.sleepSessions.isEmpty, "La liste doit rester vide en cas d'erreur")
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertTrue(viewModel.sleepSessions.isEmpty)
     }
 
     // MARK: - Tests — formattedDuration 
@@ -105,29 +105,37 @@ final class SleepHistoryViewModelTests: XCTestCase {
     /// Vérifie que formattedDuration() retourne la bonne chaîne pour des durées variées.
     /// La fonction static est testée directement sans instancier le ViewModel.
     func test_FormattedDuration_ReturnsCorrectString() {
+        // Moins d'une heure → format "X min" (h == 0)
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(45), "45min")
         // Durées rondes en heures
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(480), "8 h",    "480 min = 8 h exactement")
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(60),  "1 h",    "60 min = 1 h exactement")
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(480), "8h")
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(60),  "1h")
 
         // Durées avec minutes résiduelles
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(90),  "1h30",  "90 min = 1h30")
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(330), "5h30",  "330 min = 5h30")
-        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(75),  "1h15",  "75 min = 1h15")
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(90),  "1h30")
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(330), "5h30")
+        XCTAssertEqual(SleepHistoryViewModel.formattedDuration(75),  "1h15")
     }
 
     // MARK: - Tests — qualityIcon (static)
 
     /// Vérifie que qualityIcon() retourne le bon nom d'icône SF Symbols pour chaque qualité.
     func test_QualityIcon_ReturnsCorrectIconForEachQuality() {
-        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "mauvaise"),   "xmark.circle.fill",
-                       "mauvaise → icône d'erreur")
-        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "moyenne"),    "minus.circle.fill",
-                       "moyenne → icône neutre")
-        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "bonne"),      "checkmark.circle.fill",
-                       "bonne → icône de succès")
-        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "excellente"), "star.circle.fill",
-                       "excellente → icône étoile")
-        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: nil),          "circle",
-                       "nil → icône par défaut")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "mauvaise"),   "xmark.circle.fill")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "moyenne"),    "minus.circle.fill")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "bonne"),      "checkmark.circle.fill")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: "excellente"), "star.circle.fill")
+        XCTAssertEqual(SleepHistoryViewModel.qualityIcon(for: nil),          "circle")
+    }
+    // MARK: - Tests — qualityColor (static)
+    /// Vérifie que qualityColor() retourne la bonne couleur pour chaque qualité.
+    /// La fonction static est testée directement sans instancier le ViewModel.
+    func test_QualityColor_ReturnsCorrectColorForEachQuality() {
+        XCTAssertEqual(SleepHistoryViewModel.qualityColor(for: "mauvaise"),   .red)
+        XCTAssertEqual(SleepHistoryViewModel.qualityColor(for: "moyenne"),    .orange)
+        XCTAssertEqual(SleepHistoryViewModel.qualityColor(for: "bonne"),      .green)
+        XCTAssertEqual(SleepHistoryViewModel.qualityColor(for: "excellente"), .yellow)
+        XCTAssertEqual(SleepHistoryViewModel.qualityColor(for: nil),          .secondary)
+
     }
 }

@@ -157,4 +157,39 @@ final class ExerciseListViewModelTests: XCTestCase {
         // THEN : Le ViewModel doit détecter l'échec et mettre à jour le message d'erreur
         XCTAssertNotNil(viewModel.errorMessage)
     }
+    // MARK: - Tests — formattedDuration (static)
+
+    /// Vérifie que formattedDuration() convertit correctement les minutes en chaîne lisible.
+    func test_FormattedDuration_ReturnsCorrectString() {
+        XCTAssertEqual(ExerciseListViewModel.formattedDuration(0),   "0 min")
+        XCTAssertEqual(ExerciseListViewModel.formattedDuration(30),  "30 min")
+        XCTAssertEqual(ExerciseListViewModel.formattedDuration(45),  "45 min")
+        XCTAssertEqual(ExerciseListViewModel.formattedDuration(120), "120 min")
+    }
+
+    // MARK: - Tests — icon(for:) (static)
+
+    /// Vérifie que icon(for:) retourne le bon nom SF Symbols pour chaque catégorie.
+    func test_Icon_ReturnsCorrectIconForEachCategory() {
+        XCTAssertEqual(ExerciseListViewModel.icon(for: "cardio"),      "heart.fill")
+        XCTAssertEqual(ExerciseListViewModel.icon(for: "musculation"), "dumbbell.fill")
+        XCTAssertEqual(ExerciseListViewModel.icon(for: "yoga"),        "figure.mind.and.body")
+        XCTAssertEqual(ExerciseListViewModel.icon(for: "marche"),      "figure.walk")
+        XCTAssertEqual(ExerciseListViewModel.icon(for: "sport"),       "sportscourt.fill")
+        XCTAssertEqual(ExerciseListViewModel.icon(for: "autre"),       "figure.mixed.cardio")
+        XCTAssertEqual(ExerciseListViewModel.icon(for: nil),           "figure.mixed.cardio")
+    }
+
+    // MARK: - Tests — color(for:) (static)
+
+    /// Vérifie que color(for:) retourne la bonne couleur pour chaque catégorie.
+    func test_Color_ReturnsCorrectColorForEachCategory() {
+        XCTAssertEqual(ExerciseListViewModel.color(for: "cardio"),      .red)
+        XCTAssertEqual(ExerciseListViewModel.color(for: "musculation"), .blue)
+        XCTAssertEqual(ExerciseListViewModel.color(for: "yoga"),        .green)
+        XCTAssertEqual(ExerciseListViewModel.color(for: "marche"),      .orange)
+        XCTAssertEqual(ExerciseListViewModel.color(for: "sport"),       .purple)
+        XCTAssertEqual(ExerciseListViewModel.color(for: "autre"),       .gray)
+        XCTAssertEqual(ExerciseListViewModel.color(for: nil),           .gray)
+    }
 }

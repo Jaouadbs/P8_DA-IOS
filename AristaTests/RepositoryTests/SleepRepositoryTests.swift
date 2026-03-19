@@ -146,30 +146,30 @@ final class SleepRepositoryTests: XCTestCase {
 
     // MARK: - Helpers
 
-    /// Insère une session Sleep dans Core Data et la lie à l'utilisateur partagé.
-    @discardableResult
-    private func insertSleep(
-        category: String,
-        duration: Int64,
-        quality: String,
-        startDate: Date,
-        endDate: Date? = nil
-    ) -> Sleep {
-        let session = Sleep(context: context)
-        session.id = UUID()
-        session.category = category
-        session.duration = duration
-        session.quality = quality
-        session.startDate = startDate
-        
-        // Si aucune date de fin n'est fournie, on la calcule par rapport à la durée (en minutes)
-        session.endDate = endDate ?? Date(timeIntervalSince1970: startDate.timeIntervalSince1970 + Double(duration * 60))
+        /// Insère une session Sleep dans Core Data et la lie à l'utilisateur partagé.
+        @discardableResult
+        private func insertSleep(
+            category: String,
+            duration: Int64,
+            quality: String,
+            startDate: Date,
+            endDate: Date? = nil
+        ) -> Sleep {
+            let session = Sleep(context: context)
+            session.id = UUID()
+            session.category = category
+            session.duration = duration
+            session.quality = quality
+            session.startDate = startDate
 
-        // Relation cruciale avec l'utilisateur
-        session.user = sharedUser
+            // Si aucune date de fin n'est fournie, on la calcule par rapport à la durée (en minutes)
+            session.endDate = endDate ?? Date(timeIntervalSince1970: startDate.timeIntervalSince1970 + Double(duration * 60))
 
-        try! context.save()
-        return session
-    }
+            // Relation cruciale avec l'utilisateur
+            session.user = sharedUser
+
+            try! context.save()
+            return session
+        }
 
 }

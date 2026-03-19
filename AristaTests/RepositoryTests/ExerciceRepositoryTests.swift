@@ -195,7 +195,18 @@ final class ExerciseRepositoryTests: XCTestCase {
         XCTAssertEqual(result.count, 1)
         XCTAssertEqual(result[0].category, "musculation")
     }
+    // MARK: - Tests — RepositoryError
 
+    /// Vérifie que errorDescription retourne le bon message pour chaque cas d'erreur.
+    /// Sans ce test, le getter n'est jamais appelé → couverture 0%.
+    func test_RepositoryError_UserNotFound_HasCorrectDescription() {
+        let error = RepositoryError.userNotFound
+
+        XCTAssertEqual(
+            error.errorDescription,
+            "Aucun utilisateur trouvé. Impossible d'enregistrer l'exercice"
+        )
+    }
 
     // MARK: - Helpers (Méthodes privées d'insertion )
 
